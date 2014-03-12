@@ -10,6 +10,9 @@ void igr::extrude_scene::on_begin () {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(45, (float) window.getSize().x / (float) window.getSize().y, 1, 1000);
+
+  /* Set up lighting */
+  glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 }
 
 
@@ -41,7 +44,6 @@ void igr::extrude_scene::on_draw () {
     glVertex3f(10.f, 0.f, +0.2f);
     glVertex3f(10.f, 0.f, -0.2f);
 
-
     glColor3f(0.f, 0.8f, 0.f);
     glVertex3f(0.f, -10.f, 0.f);
     glVertex3f(0.f, +10.f, 0.f);
@@ -58,17 +60,28 @@ void igr::extrude_scene::on_draw () {
     glVertex3f(0.f, +0.2f, 10.f);
     glVertex3f(0.f, -0.2f, 10.f);
   glEnd();
+
+  glColor3f(1.f, 1.f, 1.f);
+  glBegin(GL_LINE_LOOP);
+  for (std::size_t i = 0u; i < 128; i++) {
+    double t = (i * M_PI * 4) / 128.0;
+    glVertex3d(3.0 * cos(t), 2.0 * cos(1.5 * t), 3.0 * sin(t));
+  }
+  glEnd();
 }
 
 
 bool igr::extrude_scene::on_event (event_t event) {
   switch (event.type) {
     case sf::Event::Resized: {
+      /* Viewport change */
+      glViewport(0, 0, event.size.width, event.size.height);
 
       /* Setup the projection */
       glMatrixMode(GL_PROJECTION);
       glLoadIdentity();
       gluPerspective(45, (float) event.size.width / (float) event.size.height, 1, 1000);
+
 
       return true;
     }
