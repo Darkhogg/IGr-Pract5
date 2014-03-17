@@ -3,6 +3,10 @@
 
 #include "engine/common.h"
 #include "engine/scene.hpp"
+#include "engine/color.hpp"
+#include "engine/mesh.hpp"
+
+#include <functional>
 
 namespace igr {
 
@@ -11,10 +15,39 @@ namespace igr {
       double _vpitch, _vpitchspd;
       double _vfar,   _vfarspd;
 
+      std::function<vec<double>(double)> _curve, _dcurve, _ddcurve;
+
     public:
       extrude_scene ()
         : _vyaw(1.0), _vpitch(0.5), _vfar(16.0)
-      {}
+      {
+        _curve = [](double t) -> vec<double>{
+          return {
+            3.0 * cos(t),
+            2.0 * cos(1.5 * t),
+            3.0 * sin(t),
+            category::point
+          };
+        };
+
+        _dcurve = [](double t) -> vec<double>{
+          return {
+            -3.0 * sin(t),
+            -4.5 * sin(1.5 * t),
+            3.0 * cos(t),
+            category::point
+          };
+        };
+
+        _ddcurve = [](double t) -> vec<double>{
+          return {
+            -3.0 * cos(t),
+            -6.75 * cos(1.5 * t),
+            -3.0 * sin(t),
+            category::point
+          };
+        };
+      }
 
       void on_begin ();
       void on_draw ();
