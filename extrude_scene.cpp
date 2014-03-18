@@ -26,6 +26,8 @@ void igr::extrude_scene::on_begin () {
   glEnable(GL_CULL_FACE);
   glCullFace(GL_FRONT);
 
+  glEnable(GL_MULTISAMPLE);
+
    // Light0
   glEnable(GL_LIGHT0);
   GLfloat d[]={1.0, 1.0, 1.0, 1.0};
@@ -93,12 +95,34 @@ void igr::extrude_scene::on_draw () {
     glVertex3f(0.f, -0.2f, 10.f);
   glEnd();
 
-  vec<double> c = _curve(_t);
+  vec<double> c   = _curve(_t);
+  vec<double> dc  = _dcurve(_t);
+  //vec<double> ddc = _ddcurve(_t);
 
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   glTranslated(c.x, c.y, c.z);
+
+
+
+  vec<double> dir {0.0, 0.0, 1.0};
+  vec<double> n = dir.cross(dc).normalized();
+
+  glRotated(180 * dir.angle(dc) / M_PI, n.x, n.y, n.z);
+
+
   _box.gl_draw_immediate();
+  glBegin(GL_LINES);
+    glColor3f(1.f, 0.f, 0.f);
+    glVertex3f(0.f, 0.f, 0.f);
+    glVertex3f(1.f, 0.f, 0.f);
+    glColor3f(0.f, 1.f, 0.f);
+    glVertex3f(0.f, 0.f, 0.f);
+    glVertex3f(0.f, 1.f, 0.f);
+    glColor3f(0.f, 0.f, 1.f);
+    glVertex3f(0.f, 0.f, 0.f);
+    glVertex3f(0.f, 0.f, 1.f);
+  glEnd();
   glPopMatrix();
 
   glColor3f(1.f, 1.f, 1.f);
