@@ -9,7 +9,7 @@ void igr::extrude_scene::on_begin () {
   /* Setup the projection */
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(45, (float) window.getSize().x / (float) window.getSize().y, 1, 1000);
+  gluPerspective(45, (float) window.getSize().x / (float) window.getSize().y, 0.1, 1000);
 
   /* Set up lighting */
   //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
@@ -19,7 +19,6 @@ void igr::extrude_scene::on_begin () {
   glEnable(GL_COLOR_MATERIAL);
   glMaterialf(GL_FRONT, GL_SHININESS, 0.1f);
 
-  glEnable(GL_DEPTH_TEST);
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -37,7 +36,7 @@ void igr::extrude_scene::on_begin () {
   glLightfv(GL_LIGHT0, GL_POSITION, p);
 
   /* Initial meshes */
-  _box = mesh::make_aligned_box({0.1f, 0.5f, 0.9f, 0.9f});
+  _box = mesh::make_aligned_box({0.1f, 0.5f, 0.9f});
 }
 
 
@@ -57,8 +56,14 @@ void igr::extrude_scene::on_update (float delta) {
 
 
 void igr::extrude_scene::on_draw () {
+  glEnable(GL_DEPTH_TEST);
+  glDepthMask(GL_TRUE);
+  glDepthFunc(GL_LEQUAL);
+  glDepthRange(0.0f, 1.0f);
+
   /* Clear the screen */
   glClearColor(0.15f, 0.175f, 0.2f, 1.f);
+  glClearDepth(1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   /* Draw axis to check everything ok */
