@@ -110,7 +110,6 @@ void igr::extrude_scene::on_draw () {
 
   glRotated(180 * dir.angle(dc) / M_PI, n.x, n.y, n.z);
 
-
   _box.gl_draw_immediate();
   glBegin(GL_LINES);
     glColor3f(1.f, 0.f, 0.f);
