@@ -35,6 +35,9 @@ void igr::extrude_scene::on_begin () {
   glLightfv(GL_LIGHT0, GL_AMBIENT, a);
   GLfloat p[]={25.0, 25.0, 0.0, 1.0};
   glLightfv(GL_LIGHT0, GL_POSITION, p);
+
+  /* Initial meshes */
+  _box = mesh::make_aligned_box({0.1f, 0.5f, 0.9f, 0.9f});
 }
 
 
@@ -48,6 +51,8 @@ void igr::extrude_scene::on_update (float delta) {
     _vfar * sin(_vpitch),
     _vfar * sin(_vyaw) * cos(_vpitch)
   };
+
+  _t += delta;
 }
 
 
@@ -83,11 +88,14 @@ void igr::extrude_scene::on_draw () {
     glVertex3f(0.f, -0.2f, 10.f);
   glEnd();
 
-  glPolygonMode(GL_FRONT, GL_LINE);
-  mesh box = mesh::make_aligned_box({1.f, 1.f, 1.f, 0.6f});
-  box.gl_draw_immediate();
+  vec<double> c = _curve(_t);
 
-  /*
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glTranslated(c.x, c.y, c.z);
+  _box.gl_draw_immediate();
+  glPopMatrix();
+
   glColor3f(1.f, 1.f, 1.f);
   glBegin(GL_LINE_LOOP);
   for (std::size_t i = 0u; i < 256; i++) {
@@ -96,7 +104,6 @@ void igr::extrude_scene::on_draw () {
     glVertex3d(v.x, v.y, v.z);
   }
   glEnd();
-  */
 }
 
 

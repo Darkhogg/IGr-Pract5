@@ -16,6 +16,9 @@ namespace igr {
       double _vfar,   _vfarspd;
 
       std::function<vec<double>(double)> _curve, _dcurve, _ddcurve;
+      double _t;
+
+      mesh _box;
 
     public:
       extrude_scene ()
