@@ -20,9 +20,12 @@ namespace igr {
 
       mesh _box;
 
+      mesh _tube;
+
     public:
       extrude_scene ()
-        : _vyaw(1.0), _vpitch(0.5), _vfar(16.0)
+        : scene{"Extruded Roller Coaster"},
+          _vyaw{1.0}, _vpitch{0.5}, _vfar{16.0}
       {
         _curve = [](double t) -> vec<double>{
           return {

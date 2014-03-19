@@ -1,5 +1,8 @@
 #include "extrude_scene.hpp"
 
+#define TUBE_SIDES 16
+#define TUBE_SECTIONS 256
+
 
 void igr::extrude_scene::on_begin () {
   cam.eye  = {10.f, 10.f, 10.f};
@@ -39,6 +42,23 @@ void igr::extrude_scene::on_begin () {
 
   /* Initial meshes */
   _box = mesh::make_aligned_box({0.1f, 0.5f, 0.9f});
+
+
+  mesh poly;
+  for (int i = 0; i < TUBE_SIDES; ++i) {
+    double ang = 2.0 * M_PI * (double) i / (double) TUBE_SIDES;
+    poly.add_vertex(
+      {0.5 * cos(ang), 0.5 * sin(ang), 0.0},
+      {cos(ang), sin(ang), 0.0},
+      {1.f, 1.f, 1.f, 1.f},
+      {}
+    );
+    if (i > 2) {
+      poly.add_face(0, i - 1, i);
+    }
+  }
+
+  _tube = poly;
 }
 
 
@@ -97,13 +117,13 @@ void igr::extrude_scene::on_draw () {
 
   vec<double> c   = _curve(_t);
   vec<double> dc  = _dcurve(_t);
-  //vec<double> ddc = _ddcurve(_t);
+  vec<double> ddc = _ddcurve(_t);
 
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   glTranslated(c.x, c.y, c.z);
 
-
+  _tube.gl_draw_immediate();
 
   vec<double> dir {0.0, 0.0, 1.0};
   vec<double> n = dir.cross(dc).normalized();
