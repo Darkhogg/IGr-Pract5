@@ -23,6 +23,8 @@ namespace igr {
       mesh _tube;
       std::vector<mesh> _polys;
 
+      bool _tubelines;
+
     public:
       extrude_scene ()
         : scene{"Extruded Roller Coaster"},

@@ -41,7 +41,7 @@ void igr::extrude_scene::on_begin () {
   glLightfv(GL_LIGHT0, GL_POSITION, p);
 
   /* Initial meshes */
-  _box = mesh::make_aligned_box({0.1f, 0.5f, 0.9f});
+  _box = mesh::make_aligned_box({0.9f, 0.9f, 0.9f});
 
 
   /* Construct the tube polygon */
@@ -51,8 +51,7 @@ void igr::extrude_scene::on_begin () {
     poly.add_vertex(
       {0.7 * sin(ang), 0.7 * cos(ang), 0},
       {sin(ang), cos(ang), 0},
-      {0.1f, 0.4f, 0.9f, 1.f},
-      {}
+      {}, {}
     );
     if (i > 1) {
       poly.add_face(0, i - 1, i);
@@ -78,7 +77,14 @@ void igr::extrude_scene::on_begin () {
 
     for (std::size_t j = 0; j < TUBE_SIDES; ++j) {
       auto tv = trans.vertices[j];
-      _tube.add_vertex(tv.point, tv.normal, tv.color, {});
+      double cang = 2 * M_PI * i / (double) TUBE_SECTIONS;
+      color rbc = {
+        (cos(cang) + 1) / 2,
+        (cos(cang + M_PI / 1.5) + 1) / 2,
+        (cos(cang + 2 * M_PI / 1.5) + 1) / 2,
+        1.f
+      };
+      _tube.add_vertex(tv.point, tv.normal, rbc, {});
 
       std::size_t j1  = (j + 1) % TUBE_SIDES;
       std::size_t k00 = j  + i * TUBE_SIDES;
@@ -87,7 +93,6 @@ void igr::extrude_scene::on_begin () {
       std::size_t k11 = j1 + ((i + 1) % TUBE_SECTIONS) * TUBE_SIDES;
       _tube.add_face(k00, k10, k01);
       _tube.add_face(k01, k10, k11);
-      std::cout << k00 << ", " << k01 << ", " << k10 << ", " << k11 << std::endl;
     }
   }
 }
@@ -150,6 +155,7 @@ void igr::extrude_scene::on_draw () {
   vec<double> dc  = _dcurve(_t);
   vec<double> ddc = _ddcurve(_t);
 
+  glPolygonMode(GL_FRONT_AND_BACK, _tubelines ? GL_LINE : GL_FILL);
   _tube.gl_draw_immediate();
 
   glMatrixMode(GL_MODELVIEW);  
@@ -159,30 +165,12 @@ void igr::extrude_scene::on_draw () {
   vec<double> dir {0.0, 0.0, 1.0};
   vec<double> n = dir.cross(dc).normalized();
 
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glRotated(180 * dir.angle(dc) / M_PI, n.x, n.y, n.z);
+  glScaled(0.7, 0.7, 0.7);
 
   _box.gl_draw_immediate();
-  glBegin(GL_LINES);
-    glColor3f(1.f, 0.f, 0.f);
-    glVertex3f(0.f, 0.f, 0.f);
-    glVertex3f(1.f, 0.f, 0.f);
-    glColor3f(0.f, 1.f, 0.f);
-    glVertex3f(0.f, 0.f, 0.f);
-    glVertex3f(0.f, 1.f, 0.f);
-    glColor3f(0.f, 0.f, 1.f);
-    glVertex3f(0.f, 0.f, 0.f);
-    glVertex3f(0.f, 0.f, 1.f);
-  glEnd();
   glPopMatrix();
-
-  glColor3f(1.f, 1.f, 1.f);
-  glBegin(GL_LINE_LOOP);
-  for (std::size_t i = 0u; i < 256; i++) {
-    double t = (i * M_PI * 4) / 256.0;
-    vec<double> v = _curve(t);
-    glVertex3d(v.x, v.y, v.z);
-  }
-  glEnd();
 }
 
 
@@ -227,6 +215,16 @@ bool igr::extrude_scene::on_event (event_t event) {
         }
         case sf::Keyboard::Key::E: {
           _vpitchspd = -1.0;
+          break;
+        }
+
+
+        case sf::Keyboard::Key::Z: {
+          _tubelines = true;
+          break;
+        }
+        case sf::Keyboard::Key::X: {
+          _tubelines = false;
           break;
         }
 
