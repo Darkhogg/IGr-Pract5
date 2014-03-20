@@ -1,6 +1,6 @@
 #include "extrude_scene.hpp"
 
-#define TUBE_SIDES 16
+#define TUBE_SIDES 24
 #define TUBE_SECTIONS 256
 
 
@@ -44,21 +44,52 @@ void igr::extrude_scene::on_begin () {
   _box = mesh::make_aligned_box({0.1f, 0.5f, 0.9f});
 
 
+  /* Construct the tube polygon */
   mesh poly;
   for (int i = 0; i < TUBE_SIDES; ++i) {
     double ang = 2.0 * M_PI * (double) i / (double) TUBE_SIDES;
     poly.add_vertex(
-      {0.5 * cos(ang), 0.5 * sin(ang), 0.0},
-      {cos(ang), sin(ang), 0.0},
-      {1.f, 1.f, 1.f, 1.f},
+      {0.7 * sin(ang), 0.7 * cos(ang), 0},
+      {sin(ang), cos(ang), 0},
+      {0.1f, 0.4f, 0.9f, 1.f},
       {}
     );
-    if (i > 2) {
+    if (i > 1) {
       poly.add_face(0, i - 1, i);
     }
   }
 
-  _tube = poly;
+  for (int i = 0; i < TUBE_SECTIONS; ++i) {
+    double pos = 4 * M_PI * i / (double) TUBE_SECTIONS;
+    matr<double> m;
+
+    vec<double> t = _dcurve(pos).normalized();
+    vec<double> b = _dcurve(pos).cross(_ddcurve(pos)).normalized();
+    vec<double> n = b.cross(t).normalized();
+    vec<double> c = _curve(pos);
+
+
+    m(0, 0) = n.x; m(1, 0) = n.y; m(2, 0) = n.z; m(3, 0) = 0;
+    m(0, 1) = b.x; m(1, 1) = b.y; m(2, 1) = b.z; m(3, 1) = 0;
+    m(0, 2) = t.x; m(1, 2) = t.y; m(2, 2) = t.z; m(3, 2) = 0;
+    m(0, 3) = c.x; m(1, 3) = c.y; m(2, 3) = c.z; m(3, 3) = 1;
+
+    auto trans = poly.transformed(m);
+
+    for (std::size_t j = 0; j < TUBE_SIDES; ++j) {
+      auto tv = trans.vertices[j];
+      _tube.add_vertex(tv.point, tv.normal, tv.color, {});
+
+      std::size_t j1  = (j + 1) % TUBE_SIDES;
+      std::size_t k00 = j  + i * TUBE_SIDES;
+      std::size_t k10 = j1 + i * TUBE_SIDES;
+      std::size_t k01 = j  + ((i + 1) % TUBE_SECTIONS) * TUBE_SIDES;
+      std::size_t k11 = j1 + ((i + 1) % TUBE_SECTIONS) * TUBE_SIDES;
+      _tube.add_face(k00, k10, k01);
+      _tube.add_face(k01, k10, k11);
+      std::cout << k00 << ", " << k01 << ", " << k10 << ", " << k11 << std::endl;
+    }
+  }
 }
 
 
@@ -119,11 +150,11 @@ void igr::extrude_scene::on_draw () {
   vec<double> dc  = _dcurve(_t);
   vec<double> ddc = _ddcurve(_t);
 
-  glMatrixMode(GL_MODELVIEW);
+  _tube.gl_draw_immediate();
+
+  glMatrixMode(GL_MODELVIEW);  
   glPushMatrix();
   glTranslated(c.x, c.y, c.z);
-
-  _tube.gl_draw_immediate();
 
   vec<double> dir {0.0, 0.0, 1.0};
   vec<double> n = dir.cross(dc).normalized();

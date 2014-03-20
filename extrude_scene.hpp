@@ -21,6 +21,7 @@ namespace igr {
       mesh _box;
 
       mesh _tube;
+      std::vector<mesh> _polys;
 
     public:
       extrude_scene ()
