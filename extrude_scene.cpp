@@ -42,6 +42,7 @@ void igr::extrude_scene::on_begin () {
 
   /* Initial meshes */
   _box = mesh::make_aligned_box({0.9f, 0.9f, 0.9f});
+  _box.transform(matr<double>::make_scalation({0.85f, 0.85f, 0.85f}));
 
 
   /* Construct the tube polygon */
@@ -67,7 +68,6 @@ void igr::extrude_scene::on_begin () {
     vec<double> n = b.cross(t).normalized();
     vec<double> c = _curve(pos);
 
-
     m(0, 0) = n.x; m(1, 0) = n.y; m(2, 0) = n.z; m(3, 0) = 0;
     m(0, 1) = b.x; m(1, 1) = b.y; m(2, 1) = b.z; m(3, 1) = 0;
     m(0, 2) = t.x; m(1, 2) = t.y; m(2, 2) = t.z; m(3, 2) = 0;
@@ -79,9 +79,9 @@ void igr::extrude_scene::on_begin () {
       auto tv = trans.vertices[j];
       double cang = 2 * M_PI * i / (double) TUBE_SECTIONS;
       color rbc = {
-        (cos(cang) + 1) / 2,
-        (cos(cang + M_PI / 1.5) + 1) / 2,
-        (cos(cang + 2 * M_PI / 1.5) + 1) / 2,
+        (float) ((cos(cang) + 1) / 2),
+        (float) ((cos(cang + M_PI / 1.5) + 1) / 2),
+        (float) ((cos(cang + 2 * M_PI / 1.5) + 1) / 2),
         1.f
       };
       _tube.add_vertex(tv.point, tv.normal, rbc, {});
@@ -108,6 +108,30 @@ void igr::extrude_scene::on_update (float delta) {
     _vfar * sin(_vpitch),
     _vfar * sin(_vyaw) * cos(_vpitch)
   };
+
+  /* Axis X */
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R)) {
+    _tubetrans = matr<double>::make_rotation_x(delta) * _tubetrans;
+  }
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T)) {
+    _tubetrans = matr<double>::make_rotation_x(-delta) * _tubetrans;
+  }
+
+  /* Axis Y */
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F)) {
+    _tubetrans = matr<double>::make_rotation_y(delta) * _tubetrans;
+  }
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::G)) {
+    _tubetrans = matr<double>::make_rotation_y(-delta) * _tubetrans;
+  }
+
+  /* Axis Z */
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::V)) {
+    _tubetrans = matr<double>::make_rotation_z(delta) * _tubetrans;
+  }
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::B)) {
+    _tubetrans = matr<double>::make_rotation_z(-delta) * _tubetrans;
+  }
 
   _t += delta;
 }
@@ -151,25 +175,35 @@ void igr::extrude_scene::on_draw () {
     glVertex3f(0.f, -0.2f, 10.f);
   glEnd();
 
-  vec<double> c   = _curve(_t);
-  vec<double> dc  = _dcurve(_t);
-  vec<double> ddc = _ddcurve(_t);
-
   glPolygonMode(GL_FRONT_AND_BACK, _tubelines ? GL_LINE : GL_FILL);
-  _tube.gl_draw_immediate();
+  mesh tube = _tube.transformed(_tubetrans);
+
+  tube.gl_draw_immediate();
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::N)) {
+    tube.gl_draw_normals();
+  }
 
   glMatrixMode(GL_MODELVIEW);  
   glPushMatrix();
-  glTranslated(c.x, c.y, c.z);
 
-  vec<double> dir {0.0, 0.0, 1.0};
-  vec<double> n = dir.cross(dc).normalized();
+  mesh trbox {_box};
+  matr<double> m;
+
+  vec<double> t = _dcurve(_t).normalized();
+  vec<double> b = _dcurve(_t).cross(_ddcurve(_t)).normalized();
+  vec<double> n = b.cross(t).normalized();
+  vec<double> c = _curve(_t);
+
+  m(0, 0) = n.x; m(1, 0) = n.y; m(2, 0) = n.z; m(3, 0) = 0;
+  m(0, 1) = b.x; m(1, 1) = b.y; m(2, 1) = b.z; m(3, 1) = 0;
+  m(0, 2) = t.x; m(1, 2) = t.y; m(2, 2) = t.z; m(3, 2) = 0;
+  m(0, 3) = c.x; m(1, 3) = c.y; m(2, 3) = c.z; m(3, 3) = 1;
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-  glRotated(180 * dir.angle(dc) / M_PI, n.x, n.y, n.z);
-  glScaled(0.7, 0.7, 0.7);
+  trbox.transform(m);
+  trbox.transform(_tubetrans);
+  trbox.gl_draw_immediate();
 
-  _box.gl_draw_immediate();
   glPopMatrix();
 }
 

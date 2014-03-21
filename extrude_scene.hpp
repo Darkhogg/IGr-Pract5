@@ -21,7 +21,7 @@ namespace igr {
       mesh _box;
 
       mesh _tube;
-      std::vector<mesh> _polys;
+      matr<double> _tubetrans;
 
       bool _tubelines;
 
