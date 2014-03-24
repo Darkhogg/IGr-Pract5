@@ -105,7 +105,15 @@ void igr::extrude_scene::on_begin () {
         (float) ((cos(cang + 2 * M_PI / 1.5) + 1) / 2),
         1.f
       };
-      _tube.add_vertex(tv.point, tv.normal, rbc, {});
+
+      /* Newell */
+      double nwlang = (M_PI * 2 * j / (double) TUBE_SIDES);
+      vec<double> nwlu {_dcurve(pos)};
+      vec<double> nwlv {cos(nwlang), -sin(nwlang), 0.0};
+      nwlv = m * nwlv;
+      vec<double> norm = nwlu.cross(nwlv).normalized();
+
+      _tube.add_vertex(tv.point, norm, rbc, {});
 
       std::size_t j1  = (j + 1) % TUBE_SIDES;
       std::size_t k00 = j  + i * TUBE_SIDES;
