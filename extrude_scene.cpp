@@ -42,7 +42,28 @@ void igr::extrude_scene::on_begin () {
 
   /* Initial meshes */
   _box = mesh::make_aligned_box({0.9f, 0.9f, 0.9f});
-  _box.transform(matr<double>::make_scalation({0.85f, 0.85f, 0.85f}));
+  _box.transform(matr<double>::make_scalation({0.75, 0.75, 1.0}));
+  _box.transform(matr<double>::make_translation({0.0, -0.1, 0.0}));
+
+  _wheels[0] = mesh::make_aligned_cylinder({0.7f, 0.7f, 0.7f}, 32);
+  _wheels[0].transform(matr<double>::make_scalation({0.45f, 0.45f, 0.25f}));
+  _wheels[0].transform(matr<double>::make_rotation_y(M_PI_2));
+  _wheels[0].transform(matr<double>::make_translation({0.27, 0.3, 0.35}));
+
+  _wheels[1] = mesh::make_aligned_cylinder({0.7f, 0.7f, 0.7f}, 32);
+  _wheels[1].transform(matr<double>::make_scalation({0.45f, 0.45f, 0.25f}));
+  _wheels[1].transform(matr<double>::make_rotation_y(M_PI_2));
+  _wheels[1].transform(matr<double>::make_translation({-0.27, 0.3, 0.35}));
+
+  _wheels[2] = mesh::make_aligned_cylinder({0.7f, 0.7f, 0.7f}, 32);
+  _wheels[2].transform(matr<double>::make_scalation({0.45f, 0.45f, 0.25f}));
+  _wheels[2].transform(matr<double>::make_rotation_y(M_PI_2));
+  _wheels[2].transform(matr<double>::make_translation({0.27, 0.3, -0.35}));
+
+  _wheels[3] = mesh::make_aligned_cylinder({0.7f, 0.7f, 0.7f}, 32);
+  _wheels[3].transform(matr<double>::make_scalation({0.45f, 0.45f, 0.25f}));
+  _wheels[3].transform(matr<double>::make_rotation_y(M_PI_2));
+  _wheels[3].transform(matr<double>::make_translation({-0.27, 0.3, -0.35}));
 
 
   /* Construct the tube polygon */
@@ -109,6 +130,15 @@ void igr::extrude_scene::on_update (float delta) {
     _vfar * sin(_vyaw) * cos(_vpitch)
   };
 
+  /* Axis Z */
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Y)) {
+    _t += delta;
+  }
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::H)) {
+    _t -= delta;
+  }
+
+
   /* Axis X */
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R)) {
     _tubetrans = matr<double>::make_rotation_x(delta) * _tubetrans;
@@ -132,8 +162,6 @@ void igr::extrude_scene::on_update (float delta) {
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::B)) {
     _tubetrans = matr<double>::make_rotation_z(-delta) * _tubetrans;
   }
-
-  _t += delta;
 }
 
 
@@ -187,6 +215,7 @@ void igr::extrude_scene::on_draw () {
   glPushMatrix();
 
   mesh trbox {_box};
+  std::array<mesh, 4> trwheels = _wheels;
   matr<double> m;
 
   vec<double> t = _dcurve(_t).normalized();
@@ -203,6 +232,11 @@ void igr::extrude_scene::on_draw () {
   trbox.transform(m);
   trbox.transform(_tubetrans);
   trbox.gl_draw_immediate();
+  for (auto trwheel : trwheels) {
+    trwheel.transform(m);
+    trwheel.transform(_tubetrans);
+    trwheel.gl_draw_immediate();
+  }
 
   glPopMatrix();
 }

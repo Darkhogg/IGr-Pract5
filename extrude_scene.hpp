@@ -7,6 +7,7 @@
 #include "engine/mesh.hpp"
 
 #include <functional>
+#include <array>
 
 namespace igr {
 
@@ -21,6 +22,7 @@ namespace igr {
       mesh _box;
 
       mesh _tube;
+      std::array<mesh, 4> _wheels;
       matr<double> _tubetrans;
 
       bool _tubelines;
@@ -42,7 +44,7 @@ namespace igr {
         _dcurve = [](double t) -> vec<double>{
           return {
             -3.0 * sin(t),
-            -4.5 * sin(1.5 * t),
+            -3.0 * sin(1.5 * t),
             3.0 * cos(t),
             category::point
           };
@@ -51,7 +53,7 @@ namespace igr {
         _ddcurve = [](double t) -> vec<double>{
           return {
             -3.0 * cos(t),
-            -6.75 * cos(1.5 * t),
+            -4.5 * cos(1.5 * t),
             -3.0 * sin(t),
             category::point
           };
