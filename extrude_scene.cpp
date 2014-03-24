@@ -2,6 +2,7 @@
 
 #define TUBE_SIDES 24
 #define TUBE_SECTIONS 256
+#define WHEEL_SIDES 16
 
 
 void igr::extrude_scene::on_begin () {
@@ -45,25 +46,32 @@ void igr::extrude_scene::on_begin () {
   _box.transform(matr<double>::make_scalation({0.75, 0.75, 1.0}));
   _box.transform(matr<double>::make_translation({0.0, -0.1, 0.0}));
 
-  _wheels[0] = mesh::make_aligned_cylinder({0.7f, 0.7f, 0.7f}, 32);
-  _wheels[0].transform(matr<double>::make_scalation({0.45f, 0.45f, 0.25f}));
-  _wheels[0].transform(matr<double>::make_rotation_y(M_PI_2));
-  _wheels[0].transform(matr<double>::make_translation({0.27, 0.3, 0.35}));
+  _wheels[0] = mesh::make_aligned_cylinder({0.7f, 0.7f, 0.7f}, WHEEL_SIDES);
+  _wheeltrans[0] = (matr<double>::make_scalation({0.45f, 0.45f, 0.25f})) * _wheeltrans[0];
+  _wheeltrans[0] = (matr<double>::make_rotation_y(M_PI_2)) * _wheeltrans[0];
+  _wheeltrans[0] = (matr<double>::make_translation({0.27, 0.3, 0.35})) * _wheeltrans[0];
 
-  _wheels[1] = mesh::make_aligned_cylinder({0.7f, 0.7f, 0.7f}, 32);
-  _wheels[1].transform(matr<double>::make_scalation({0.45f, 0.45f, 0.25f}));
-  _wheels[1].transform(matr<double>::make_rotation_y(M_PI_2));
-  _wheels[1].transform(matr<double>::make_translation({-0.27, 0.3, 0.35}));
+  _wheels[1] = mesh::make_aligned_cylinder({0.7f, 0.7f, 0.7f}, WHEEL_SIDES);
+  _wheeltrans[1] = (matr<double>::make_scalation({0.45f, 0.45f, 0.25f})) * _wheeltrans[1];
+  _wheeltrans[1] = (matr<double>::make_rotation_y(M_PI_2)) * _wheeltrans[1];
+  _wheeltrans[1] = (matr<double>::make_translation({-0.27, 0.3, 0.35})) * _wheeltrans[1];
 
-  _wheels[2] = mesh::make_aligned_cylinder({0.7f, 0.7f, 0.7f}, 32);
-  _wheels[2].transform(matr<double>::make_scalation({0.45f, 0.45f, 0.25f}));
-  _wheels[2].transform(matr<double>::make_rotation_y(M_PI_2));
-  _wheels[2].transform(matr<double>::make_translation({0.27, 0.3, -0.35}));
+  _wheels[2] = mesh::make_aligned_cylinder({0.7f, 0.7f, 0.7f}, WHEEL_SIDES);
+  _wheeltrans[2] = (matr<double>::make_scalation({0.45f, 0.45f, 0.25f})) * _wheeltrans[2];
+  _wheeltrans[2] = (matr<double>::make_rotation_y(M_PI_2)) * _wheeltrans[2];
+  _wheeltrans[2] = (matr<double>::make_translation({0.27, 0.3, -0.35})) * _wheeltrans[2];
 
-  _wheels[3] = mesh::make_aligned_cylinder({0.7f, 0.7f, 0.7f}, 32);
-  _wheels[3].transform(matr<double>::make_scalation({0.45f, 0.45f, 0.25f}));
-  _wheels[3].transform(matr<double>::make_rotation_y(M_PI_2));
-  _wheels[3].transform(matr<double>::make_translation({-0.27, 0.3, -0.35}));
+  _wheels[3] = mesh::make_aligned_cylinder({0.7f, 0.7f, 0.7f}, WHEEL_SIDES);
+  _wheeltrans[3] = (matr<double>::make_scalation({0.45f, 0.45f, 0.25f})) * _wheeltrans[3];
+  _wheeltrans[3] = (matr<double>::make_rotation_y(M_PI_2)) * _wheeltrans[3];
+  _wheeltrans[3] = (matr<double>::make_translation({-0.27, 0.3, -0.35})) * _wheeltrans[3];
+
+  for (std::size_t j = 0; j < 4; ++j) {
+    for (std::size_t i = 0; i < WHEEL_SIDES; i += 2) {
+      _wheels[j].vertices[2 + i * 2].color = {0.3f, 0.3f, 0.3f};
+      _wheels[j].vertices[2 +i * 2 + 1].color = {0.3f, 0.3f, 0.3f};
+    }
+  }
 
 
   /* Construct the tube polygon */
@@ -240,7 +248,10 @@ void igr::extrude_scene::on_draw () {
   trbox.transform(m);
   trbox.transform(_tubetrans);
   trbox.gl_draw_immediate();
-  for (auto trwheel : trwheels) {
+  for (std::size_t i = 0; i < 4; ++i) {
+    auto trwheel = _wheels[i];
+    trwheel.transform(matr<double>::make_rotation_z(_t * 2.0 * M_PI));
+    trwheel.transform(_wheeltrans[i]);
     trwheel.transform(m);
     trwheel.transform(_tubetrans);
     trwheel.gl_draw_immediate();

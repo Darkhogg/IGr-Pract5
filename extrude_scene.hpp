@@ -23,6 +23,7 @@ namespace igr {
 
       mesh _tube;
       std::array<mesh, 4> _wheels;
+      std::array<matr<double>, 4> _wheeltrans;
       matr<double> _tubetrans;
 
       bool _tubelines;
