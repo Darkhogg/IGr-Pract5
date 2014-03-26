@@ -1,3 +1,6 @@
+/**
+ * @author Daniel Escoz Solana
+ */
 #include "extrude_scene.hpp"
 
 #define TUBE_SIDES 24

@@ -1,3 +1,6 @@
+/**
+ * @author Daniel Escoz Solana
+ */
 #ifndef __EXTRUDE_SCENE__HPP__
 #define __EXTRUDE_SCENE__HPP__
 
